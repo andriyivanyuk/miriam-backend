@@ -32,6 +32,21 @@
         "videos",
         "audios"
       ]
+    },
+    "body_material": {
+      "type": "component",
+      "component": "shared.options",
+      "repeatable": true
+    },
+    "front_materials": {
+      "type": "component",
+      "component": "shared.options",
+      "repeatable": true
+    },
+    "size_option": {
+      "type": "component",
+      "component": "shared.size-option",
+      "repeatable": true
     }
   },
   "config": {}

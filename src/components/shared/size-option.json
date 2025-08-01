@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_shared_size_options",
+  "info": {
+    "displayName": "size_option",
+    "icon": "database"
+  },
+  "options": {},
+  "attributes": {
+    "width": {
+      "type": "integer"
+    },
+    "height": {
+      "type": "integer"
+    },
+    "depth": {
+      "type": "integer"
+    },
+    "price": {
+      "type": "integer"
+    }
+  },
+  "config": {}
+}

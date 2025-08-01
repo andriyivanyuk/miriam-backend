@@ -6,7 +6,9 @@ export interface ProductTypesKomodi extends Struct.ComponentSchema {
     displayName: 'komodi';
   };
   attributes: {
+    body_material: Schema.Attribute.Component<'shared.options', true>;
     depth: Schema.Attribute.Integer;
+    front_materials: Schema.Attribute.Component<'shared.options', true>;
     furniture_description: Schema.Attribute.Text;
     height: Schema.Attribute.Integer;
     images: Schema.Attribute.Media<
@@ -15,6 +17,7 @@ export interface ProductTypesKomodi extends Struct.ComponentSchema {
     >;
     model_name: Schema.Attribute.String;
     price: Schema.Attribute.Decimal;
+    size_option: Schema.Attribute.Component<'shared.size-option', true>;
     width: Schema.Attribute.Integer;
   };
 }
@@ -81,6 +84,20 @@ export interface SharedSeo extends Struct.ComponentSchema {
   };
 }
 
+export interface SharedSizeOption extends Struct.ComponentSchema {
+  collectionName: 'components_shared_size_options';
+  info: {
+    displayName: 'size_option';
+    icon: 'database';
+  };
+  attributes: {
+    depth: Schema.Attribute.Integer;
+    height: Schema.Attribute.Integer;
+    price: Schema.Attribute.Integer;
+    width: Schema.Attribute.Integer;
+  };
+}
+
 export interface SharedSlider extends Struct.ComponentSchema {
   collectionName: 'components_shared_sliders';
   info: {
@@ -102,6 +119,7 @@ declare module '@strapi/strapi' {
       'shared.quote': SharedQuote;
       'shared.rich-text': SharedRichText;
       'shared.seo': SharedSeo;
+      'shared.size-option': SharedSizeOption;
       'shared.slider': SharedSlider;
     }
   }
