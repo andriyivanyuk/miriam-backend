@@ -1,50 +1,31 @@
+const ejs = require("ejs");
 const fs = require("fs");
 const https = require("https");
 
-const API_URL =
-  "https://miriam-backend.onrender.com/api/menu-categories?populate=*";
-const OUTPUT_FILE = "public/frontend/includes/menu.html";
+const API_URL = "https://miriam-backend.onrender.com/api/categories?populate=*";
+const TEMPLATE_FILE = "./frontend/templates/menu.ejs";
+const OUTPUT_FILE = "./frontend/includes/menu.html";
 
 https
   .get(API_URL, (res) => {
-    let data = "";
-
-    res.on("data", (chunk) => {
-      data += chunk;
-    });
-
-    res.on("end", () => {
+    let raw = "";
+    res.on("data", (chunk) => (raw += chunk));
+    res.on("end", async () => {
       try {
-        const json = JSON.parse(data);
-        const categories = json.data;
-
-        const html = categories
+        const data = JSON.parse(raw);
+        const categories = data.data
           .map((cat) => {
-            const name = cat.name;
-            const slug = cat.slug;
-            const iconPath = cat.icon?.url;
-            const iconUrl = iconPath
-              ? `https://miriam-backend.onrender.com${iconPath}`
-              : "";
-
-            if (!name || !slug) {
-              console.warn(
-                "⚠️ Пропущено категорію через відсутність name/slug",
-                cat
-              );
-              return "";
-            }
-
-            return `
-  <li class="item">
-    <a href="/frontend/shop.html?category=${slug}" class="hasicon" title="${name}">
-      <img src="${iconUrl}" alt="${name}" />
-      ${name.toUpperCase()}
-    </a>
-  </li>`;
+            const attrs = cat.attributes || {};
+            return {
+              slug: attrs.slug,
+              name: attrs.name,
+              iconPath: attrs.icon?.data?.attributes?.url || "",
+            };
           })
-          .filter(Boolean)
-          .join("\n");
+          .filter((cat) => cat.slug && cat.name);
+
+        const template = fs.readFileSync(TEMPLATE_FILE, "utf8");
+        const html = ejs.render(template, { categories });
 
         fs.writeFileSync(OUTPUT_FILE, html, "utf8");
         console.log("✅ Меню згенеровано успішно!");
