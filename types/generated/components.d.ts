@@ -7,18 +7,14 @@ export interface ProductTypesKomodi extends Struct.ComponentSchema {
   };
   attributes: {
     body_material: Schema.Attribute.Component<'shared.options', true>;
-    depth: Schema.Attribute.Integer;
     front_materials: Schema.Attribute.Component<'shared.options', true>;
     furniture_description: Schema.Attribute.Text;
-    height: Schema.Attribute.Integer;
     images: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios',
       true
     >;
     model_name: Schema.Attribute.String;
-    price: Schema.Attribute.Decimal;
     size_option: Schema.Attribute.Component<'shared.size-option', true>;
-    width: Schema.Attribute.Integer;
   };
 }
 

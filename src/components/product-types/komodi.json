@@ -8,20 +8,8 @@
     "model_name": {
       "type": "string"
     },
-    "width": {
-      "type": "integer"
-    },
-    "height": {
-      "type": "integer"
-    },
-    "depth": {
-      "type": "integer"
-    },
     "furniture_description": {
       "type": "text"
-    },
-    "price": {
-      "type": "decimal"
     },
     "images": {
       "type": "media",
