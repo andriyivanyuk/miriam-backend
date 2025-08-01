@@ -18,14 +18,14 @@
     "slug": {
       "type": "uid"
     },
+    "description": {
+      "type": "text"
+    },
     "articles": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::article.article",
-      "mappedBy": "category"
-    },
-    "description": {
-      "type": "text"
+      "mappedBy": "menu_category"
     }
   }
 }

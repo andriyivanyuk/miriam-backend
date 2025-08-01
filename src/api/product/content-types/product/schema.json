@@ -16,6 +16,12 @@
       "components": [
         "product-types.komodi"
       ]
+    },
+    "menu_category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::menu-category.menu-category",
+      "inversedBy": "products"
     }
   }
 }
