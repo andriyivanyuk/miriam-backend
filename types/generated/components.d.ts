@@ -6,6 +6,7 @@ export interface ProductTypesKomodi extends Struct.ComponentSchema {
     displayName: 'komodi';
   };
   attributes: {
+    basic_price: Schema.Attribute.Integer;
     body_material: Schema.Attribute.Component<'shared.options', true>;
     front_materials: Schema.Attribute.Component<'shared.options', true>;
     furniture_description: Schema.Attribute.Text;
