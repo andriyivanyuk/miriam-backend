@@ -35,6 +35,9 @@
       "type": "component",
       "component": "shared.size-option",
       "repeatable": true
+    },
+    "basic_price": {
+      "type": "integer"
     }
   },
   "config": {}
