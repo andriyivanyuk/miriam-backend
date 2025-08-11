@@ -1,0 +1,37 @@
+{
+  "collectionName": "components_orders_order_items",
+  "info": {
+    "displayName": "Order item"
+  },
+  "options": {},
+  "attributes": {
+    "productId": {
+      "type": "string"
+    },
+    "model_name": {
+      "type": "string"
+    },
+    "qty": {
+      "type": "integer"
+    },
+    "unit_price": {
+      "type": "decimal"
+    },
+    "line_total": {
+      "type": "decimal"
+    },
+    "size": {
+      "type": "json"
+    },
+    "body_material": {
+      "type": "json"
+    },
+    "front_material": {
+      "type": "json"
+    },
+    "product_img": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}

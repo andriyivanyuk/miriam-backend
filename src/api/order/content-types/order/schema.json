@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "orders",
+  "info": {
+    "singularName": "order",
+    "pluralName": "orders",
+    "displayName": "Order"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "items": {
+      "type": "component",
+      "component": "orders.order-item",
+      "repeatable": true
+    },
+    "first_name": {
+      "type": "string",
+      "required": true
+    },
+    "last_name": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "phone": {
+      "type": "string"
+    },
+    "delivery_method": {
+      "type": "enumeration",
+      "enum": [
+        "courier_kyiv",
+        "nova_poshta",
+        "pickup"
+      ]
+    },
+    "delivery_address": {
+      "type": "text"
+    },
+    "payment_method": {
+      "type": "enumeration",
+      "enum": [
+        "bank_transfer",
+        "cod"
+      ]
+    },
+    "prepayment_agreement": {
+      "type": "boolean",
+      "required": true
+    },
+    "comment": {
+      "type": "text"
+    }
+  }
+}

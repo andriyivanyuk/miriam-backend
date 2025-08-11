@@ -1,5 +1,23 @@
 import type { Schema, Struct } from '@strapi/strapi';
 
+export interface OrdersOrderItem extends Struct.ComponentSchema {
+  collectionName: 'components_orders_order_items';
+  info: {
+    displayName: 'Order item';
+  };
+  attributes: {
+    body_material: Schema.Attribute.JSON;
+    front_material: Schema.Attribute.JSON;
+    line_total: Schema.Attribute.Decimal;
+    model_name: Schema.Attribute.String;
+    product_img: Schema.Attribute.String;
+    productId: Schema.Attribute.String;
+    qty: Schema.Attribute.Integer;
+    size: Schema.Attribute.JSON;
+    unit_price: Schema.Attribute.Decimal;
+  };
+}
+
 export interface ProductTypesKomodi extends Struct.ComponentSchema {
   collectionName: 'components_product_types_komodis';
   info: {
@@ -110,6 +128,7 @@ export interface SharedSlider extends Struct.ComponentSchema {
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
+      'orders.order-item': OrdersOrderItem;
       'product-types.komodi': ProductTypesKomodi;
       'shared.media': SharedMedia;
       'shared.options': SharedOptions;
