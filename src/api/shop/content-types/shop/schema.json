@@ -1,0 +1,19 @@
+{
+  "kind": "singleType",
+  "collectionName": "shops",
+  "info": {
+    "singularName": "shop",
+    "pluralName": "shops",
+    "displayName": "Shop"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "orders_email": {
+      "type": "email",
+      "required": true
+    }
+  }
+}

@@ -55,6 +55,18 @@
     },
     "comment": {
       "type": "text"
+    },
+    "invoice_sent": {
+      "type": "boolean",
+      "default": false
+    },
+    "invoice_file": {
+      "type": "media",
+      "private": true,
+      "multiple": false,
+      "allowedTypes": [
+        "files"
+      ]
     }
   }
 }

@@ -600,6 +600,8 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     >;
     email: Schema.Attribute.Email & Schema.Attribute.Required;
     first_name: Schema.Attribute.String & Schema.Attribute.Required;
+    invoice_file: Schema.Attribute.Media<'files'> & Schema.Attribute.Private;
+    invoice_sent: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     items: Schema.Attribute.Component<'orders.order-item', true>;
     last_name: Schema.Attribute.String & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -640,6 +642,31 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       'api::menu-category.menu-category'
     >;
     product_type: Schema.Attribute.DynamicZone<['product-types.komodi']>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiShopShop extends Struct.SingleTypeSchema {
+  collectionName: 'shops';
+  info: {
+    displayName: 'Shop';
+    pluralName: 'shops';
+    singularName: 'shop';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::shop.shop'> &
+      Schema.Attribute.Private;
+    orders_email: Schema.Attribute.Email & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1164,6 +1191,7 @@ declare module '@strapi/strapi' {
       'api::menu-category.menu-category': ApiMenuCategoryMenuCategory;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
+      'api::shop.shop': ApiShopShop;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
