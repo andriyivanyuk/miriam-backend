@@ -216,20 +216,6 @@ export default {
 
     try {
       const adminEmail = await getAdminEmail();
-      strapi.log.info(
-        `[order afterCreate] smtp headers: to=${adminEmail} from=${process.env.SMTP_FROM} host=${process.env.SMTP_HOST} user=${process.env.SMTP_USER}`
-      );
-
-      // тимчасовий простий лист без вкладень
-      await strapi.plugin("email").service("email").send({
-        to: adminEmail,
-        subject: "SMTP check (prod, no attachment)",
-        text: "Якщо ти це читаєш — SMTP працює ✅",
-      });
-
-      strapi.log.info("[order afterCreate] smtp-check sent");
-      // тимчасово можна зупинити подальшу логіку, щоб не дублювати PDF-лист
-      return;
 
       if (!adminEmail) {
         strapi.log.warn("[order afterCreate] no adminEmail → skip");
