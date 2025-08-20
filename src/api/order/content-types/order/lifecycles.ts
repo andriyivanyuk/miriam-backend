@@ -1,6 +1,13 @@
 import PDFDocument from "pdfkit";
 import path from "path";
 
+// на самому верху файла
+console.log("[order lifecycles] LOADED", {
+  host: process.env.SMTP_HOST,
+  from: process.env.SMTP_FROM,
+  user: process.env.SMTP_USER,
+});
+
 type Material = { id?: number; title?: string | null };
 type Size = { width?: number; height?: number; depth?: number };
 type OrderItem = {
@@ -192,6 +199,7 @@ export default {
     result: Order & { id: number; documentId: string };
     params?: { data?: Partial<Order> };
   }) {
+    strapi.log.info(`[order afterCreate] FIRED id=${event?.result?.id}`);
     // 1) перечитуємо щойно створене замовлення разом із items
     const full = await strapi.documents("api::order.order").findOne({
       documentId: event.result.documentId, // ← string (у твоїх логах є)
