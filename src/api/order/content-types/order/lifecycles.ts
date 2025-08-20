@@ -228,6 +228,10 @@ export default {
 
     try {
       const adminEmail = await getAdminEmail();
+      strapi.log.info(
+        `[order afterCreate] adminEmail=${adminEmail || "(empty)"}`
+      );
+
       if (!adminEmail) {
         strapi.log.warn("[order afterCreate] no adminEmail → skip");
         return;
