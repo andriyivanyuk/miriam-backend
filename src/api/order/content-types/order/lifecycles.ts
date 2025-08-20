@@ -8,7 +8,7 @@ type OrderItem = {
   model_name?: string | null;
   qty?: number | null;
   unit_price?: number | null;
-  line_total?: number | null; // <- в item
+  line_total?: number | null;
   size?: Size | null;
   body_material?: Material | null;
   front_material?: Material | null;
@@ -28,6 +28,25 @@ type Order = {
   items?: OrderItem[] | null;
 };
 
+// ── Мапінг кодів → людські назви ──────────────────────────────────────────────
+const DELIVERY_LABELS: Record<string, string> = {
+  courier_kyiv: "Кур’єр по Київській області",
+  nova_poshta: "Нова Пошта",
+  pickup: "Самовивіз",
+};
+
+const PAYMENT_LABELS: Record<string, string> = {
+  bank_transfer: "Оплата через Р/Р",
+  cod: "Готівкою при отриманні",
+};
+
+const labelDelivery = (v?: string | null): string =>
+  v ? (DELIVERY_LABELS[v] ?? v) : "";
+
+const labelPayment = (v?: string | null): string =>
+  v ? (PAYMENT_LABELS[v] ?? v) : "";
+
+// ── Хелпери ───────────────────────────────────────────────────────────────────
 const money = (n?: number | null) =>
   typeof n === "number" ? `${n.toLocaleString("uk-UA")} грн` : "";
 
@@ -46,14 +65,18 @@ const getAdminEmail = async (): Promise<string> => {
     const shop = await strapi
       .documents("api::shop.shop")
       .findFirst({ fields: ["orders_email"] });
-    return (shop as any)?.orders_email || process.env.ORDERS_EMAIL || "";
+    return (
+      (shop as unknown as { orders_email?: string })?.orders_email ||
+      process.env.ORDERS_EMAIL ||
+      ""
+    );
   } catch (e) {
     strapi.log.warn(`[order lifecycles] cannot read Shop.orders_email: ${e}`);
     return process.env.ORDERS_EMAIL || "";
   }
 };
 
-// -------- PDF --------
+// ── PDF ───────────────────────────────────────────────────────────────────────
 const buildOrderPdf = (o: Order): Promise<Buffer> =>
   new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 40 });
@@ -62,7 +85,6 @@ const buildOrderPdf = (o: Order): Promise<Buffer> =>
     doc.on("error", reject);
     doc.on("end", () => resolve(Buffer.concat(chunks)));
 
-    // Шрифти (Noto Sans з /assets/fonts)
     const fontsDir = path.join(process.cwd(), "assets", "fonts");
     let hasFonts = true;
     try {
@@ -101,11 +123,10 @@ const buildOrderPdf = (o: Order): Promise<Buffer> =>
     doc.font(FONT_BOLD).fontSize(14).text("Позиції");
     doc.moveDown(0.4);
 
-    // ----- Таблиця -----
-    const startX = doc.page.margins.left; // 40
+    // Таблиця
+    const startX = doc.page.margins.left;
     let y = doc.y;
-    const colWidths = [180, 40, 90, 90, 115]; // = 515 (A4 width - margins)
-    const totalWidth = colWidths.reduce((a, b) => a + b, 0);
+    const colWidths = [180, 40, 90, 90, 115];
     const cellPadX = 6;
     const cellPadY = 6;
 
@@ -119,7 +140,6 @@ const buildOrderPdf = (o: Order): Promise<Buffer> =>
 
     const drawRow = (cells: string[], isHeader = false) => {
       doc.font(isHeader ? FONT_BOLD : FONT).fontSize(10);
-      // обрахунок висоти рядка за найбільшою висотою комірки
       const heights = cells.map((txt, i) =>
         doc.heightOfString(txt, { width: colWidths[i] - cellPadX * 2 })
       );
@@ -127,10 +147,9 @@ const buildOrderPdf = (o: Order): Promise<Buffer> =>
 
       addPageIfNeeded(rowH);
 
-      // рамки комірок + текст
       let x = startX;
       for (let i = 0; i < cells.length; i++) {
-        doc.rect(x, y, colWidths[i], rowH).stroke(); // рамка
+        doc.rect(x, y, colWidths[i], rowH).stroke();
         doc.text(cells[i], x + cellPadX, y + cellPadY, {
           width: colWidths[i] - cellPadX * 2,
         });
@@ -142,7 +161,7 @@ const buildOrderPdf = (o: Order): Promise<Buffer> =>
     // Заголовок таблиці
     drawRow(["Модель", "К-сть", "Ціна од.", "Сума", "Параметри"], true);
 
-    // Рядки
+    // Позиції
     (o.items ?? []).forEach((it) => {
       const qty = Number(it.qty ?? 0);
       const unit = Number(it.unit_price ?? 0);
@@ -152,9 +171,9 @@ const buildOrderPdf = (o: Order): Promise<Buffer> =>
       if (it.size) {
         const { width, height, depth } = it.size as Size;
         const parts = [
-          width ? `${width}W` : "",
-          height ? `${height}H` : "",
-          depth ? `${depth}D` : "",
+          width ? `${width}` : "",
+          height ? `${height}` : "",
+          depth ? `${depth}` : "",
         ].filter(Boolean);
         if (parts.length) params.push(parts.join("×"));
       }
@@ -186,37 +205,37 @@ const buildOrderPdf = (o: Order): Promise<Buffer> =>
     doc.end();
   });
 
-// -------- lifecycle --------
+// ── Lifecycle ─────────────────────────────────────────────────────────────────
 export default {
   async afterCreate(event: {
     result: Order & { id: number; documentId: string };
     params?: { data?: Partial<Order> };
   }) {
     strapi.log.info(`[order afterCreate] FIRED id=${event?.result?.id}`);
-    // 1) перечитуємо щойно створене замовлення разом із items
+
+    // 1) перечитуємо повний об’єкт з items
     const full = await strapi.documents("api::order.order").findOne({
-      documentId: event.result.documentId, // ← string (у твоїх логах є)
-      populate: { items: true }, // ← повторюваний компонент
+      documentId: event.result.documentId,
+      populate: { items: true },
     });
 
-    // 2) формуємо дані для PDF (items тепер гарантовано підвантажені)
+    // 2) Формуємо DTO для PDF з уже промапленими полями доставки/оплати
     const orderForPdf: Order = {
       id: event.result.id,
       first_name: event.result.first_name,
       last_name: event.result.last_name,
       email: event.result.email,
       phone: event.result.phone,
-      delivery_method: event.result.delivery_method,
+      delivery_method: labelDelivery(event.result.delivery_method),
       delivery_address: event.result.delivery_address,
-      payment_method: event.result.payment_method,
+      payment_method: labelPayment(event.result.payment_method),
       prepayment_agreement: event.result.prepayment_agreement,
       comment: event.result.comment,
-      items: (full as { items?: OrderItem[] }).items ?? [],
+      items: (full as unknown as { items?: OrderItem[] }).items ?? [],
     };
 
     try {
       const adminEmail = await getAdminEmail();
-
       if (!adminEmail) {
         strapi.log.warn("[order afterCreate] no adminEmail → skip");
         return;
