@@ -53,7 +53,7 @@ const getAdminEmail = async (): Promise<string> => {
   }
 };
 
-// Генерація PDF у пам'яті
+// -------- PDF --------
 const buildOrderPdf = (o: Order): Promise<Buffer> =>
   new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 40 });
@@ -62,23 +62,28 @@ const buildOrderPdf = (o: Order): Promise<Buffer> =>
     doc.on("error", reject);
     doc.on("end", () => resolve(Buffer.concat(chunks)));
 
-    // Підключаємо Noto Sans з /assets/fonts
+    // Шрифти (Noto Sans з /assets/fonts)
     const fontsDir = path.join(process.cwd(), "assets", "fonts");
+    let hasFonts = true;
     try {
-      doc.registerFont("BodyBold", path.join(fontsDir, "NotoSans-Bold.ttf"));
       doc.registerFont("Body", path.join(fontsDir, "NotoSans-Regular.ttf"));
+      doc.registerFont("BodyBold", path.join(fontsDir, "NotoSans-Bold.ttf"));
+      doc.font("Body");
     } catch (e) {
+      hasFonts = false;
       strapi.log.warn(
         `[order pdf] fonts not found, fallback to Helvetica: ${e}`
       );
+      doc.font("Helvetica");
     }
+    const FONT = hasFonts ? "Body" : "Helvetica";
+    const FONT_BOLD = hasFonts ? "BodyBold" : "Helvetica-Bold";
 
-    // Заголовок
-    doc.font("BodyBold").fontSize(18).text(`Замовлення #${o.id}`);
-    doc.moveDown(0.5);
+    // Заголовок + реквізити
+    doc.font(FONT_BOLD).fontSize(22).text(`Замовлення #${o.id}`);
+    doc.moveDown(0.8);
 
-    // Тіло
-    doc.font("Body").fontSize(10);
+    doc.font(FONT).fontSize(11);
     doc.text(`Ім'я: ${o.first_name ?? ""} ${o.last_name ?? ""}`);
     doc.text(`Email: ${o.email ?? ""}`);
     doc.text(`Телефон: ${o.phone ?? ""}`);
@@ -92,26 +97,57 @@ const buildOrderPdf = (o: Order): Promise<Buffer> =>
       doc.text(`Коментар: ${o.comment}`);
     }
 
-    // Табличка позицій
-    doc.moveDown(1);
-    doc.font("BodyBold").fontSize(12).text("Позиції", { underline: true });
+    doc.moveDown(1.2);
+    doc.font(FONT_BOLD).fontSize(14).text("Позиції");
     doc.moveDown(0.4);
 
-    const col = (w: number, txt: string) =>
-      doc.text(txt, { width: w, continued: true });
+    // ----- Таблиця -----
+    const startX = doc.page.margins.left; // 40
+    let y = doc.y;
+    const colWidths = [180, 40, 90, 90, 115]; // = 515 (A4 width - margins)
+    const totalWidth = colWidths.reduce((a, b) => a + b, 0);
+    const cellPadX = 6;
+    const cellPadY = 6;
 
-    doc.font("BodyBold").fontSize(10);
-    col(200, "Модель");
-    col(50, "К-сть");
-    col(80, "Ціна од.");
-    col(80, "Сума");
-    doc.text("Параметри");
-    doc.moveDown(0.2).font("Body");
+    const addPageIfNeeded = (rowHeight: number) => {
+      const bottom = doc.page.height - doc.page.margins.bottom;
+      if (y + rowHeight > bottom) {
+        doc.addPage();
+        y = doc.page.margins.top;
+      }
+    };
 
-    (o.items ?? []).forEach((it) => {
-      const lt = Number(
-        it.line_total ?? Number(it.unit_price ?? 0) * Number(it.qty ?? 0)
+    const drawRow = (cells: string[], isHeader = false) => {
+      doc.font(isHeader ? FONT_BOLD : FONT).fontSize(10);
+      // обрахунок висоти рядка за найбільшою висотою комірки
+      const heights = cells.map((txt, i) =>
+        doc.heightOfString(txt, { width: colWidths[i] - cellPadX * 2 })
       );
+      const rowH = Math.max(...heights) + cellPadY * 2;
+
+      addPageIfNeeded(rowH);
+
+      // рамки комірок + текст
+      let x = startX;
+      for (let i = 0; i < cells.length; i++) {
+        doc.rect(x, y, colWidths[i], rowH).stroke(); // рамка
+        doc.text(cells[i], x + cellPadX, y + cellPadY, {
+          width: colWidths[i] - cellPadX * 2,
+        });
+        x += colWidths[i];
+      }
+      y += rowH;
+    };
+
+    // Заголовок таблиці
+    drawRow(["Модель", "К-сть", "Ціна од.", "Сума", "Параметри"], true);
+
+    // Рядки
+    (o.items ?? []).forEach((it) => {
+      const qty = Number(it.qty ?? 0);
+      const unit = Number(it.unit_price ?? 0);
+      const sum = Number(it.line_total ?? unit * qty);
+
       const params: string[] = [];
       if (it.size) {
         const { width, height, depth } = it.size as Size;
@@ -127,27 +163,60 @@ const buildOrderPdf = (o: Order): Promise<Buffer> =>
       if (it.front_material?.title)
         params.push(`Фасад: ${it.front_material.title}`);
 
-      col(200, it.model_name ?? "");
-      col(50, String(it.qty ?? "")); // кількість
-      col(80, money(Number(it.unit_price ?? 0))); // ціна за одиницю
-      col(80, money(lt)); // сума по позиції
-      doc.text(params.join("; ")); // параметри
+      drawRow(
+        [
+          it.model_name ?? "",
+          qty ? String(qty) : "",
+          money(unit),
+          money(sum),
+          params.join("; "),
+        ],
+        false
+      );
     });
 
+    // Підсумок
+    doc.moveDown(0.8);
     const total = itemsTotal(o.items ?? []);
-    doc.moveDown(1);
     doc
-      .font("BodyBold")
-      .fontSize(12)
+      .font(FONT_BOLD)
+      .fontSize(13)
       .text(`Разом: ${money(total)}`);
 
     doc.end();
   });
 
+// -------- lifecycle --------
 export default {
-  async afterCreate(event: { result: Order }) {
-    const order = event.result;
-    strapi.log.info(`[order afterCreate] start id=${order?.id}`);
+  async afterCreate(event: {
+    result: Order & { id: number; documentId: string };
+    params?: { data?: Partial<Order> };
+  }) {
+    // 1) перечитуємо щойно створене замовлення разом із items
+    const full = await strapi.documents("api::order.order").findOne({
+      documentId: event.result.documentId, // ← string (у твоїх логах є)
+      populate: { items: true }, // ← повторюваний компонент
+    });
+
+    // 2) формуємо дані для PDF (items тепер гарантовано підвантажені)
+    const orderForPdf: Order = {
+      id: event.result.id,
+      first_name: event.result.first_name,
+      last_name: event.result.last_name,
+      email: event.result.email,
+      phone: event.result.phone,
+      delivery_method: event.result.delivery_method,
+      delivery_address: event.result.delivery_address,
+      payment_method: event.result.payment_method,
+      prepayment_agreement: event.result.prepayment_agreement,
+      comment: event.result.comment,
+      items: (full as { items?: OrderItem[] }).items ?? [],
+    };
+
+    // (короткий лог — тільки на час діагностики)
+    strapi.log.info(
+      `[order afterCreate] items for PDF: ${orderForPdf.items?.length ?? 0}`
+    );
 
     try {
       const adminEmail = await getAdminEmail();
@@ -156,10 +225,10 @@ export default {
         return;
       }
 
-      const pdf = await buildOrderPdf(order);
+      const pdf = await buildOrderPdf(orderForPdf);
       const attachments = [
         {
-          filename: `order-${order.id}.pdf`,
+          filename: `order-${orderForPdf.id}.pdf`,
           content: pdf,
           contentType: "application/pdf",
         },
@@ -171,19 +240,19 @@ export default {
         .service("email")
         .send({
           to: adminEmail,
-          subject: `Нове замовлення #${order.id}`,
+          subject: `Нове замовлення #${orderForPdf.id}`,
           html: `<p>Деталі у вкладеному PDF.</p>`,
           attachments,
         });
 
       // клієнту
-      if (order.email) {
+      if (orderForPdf.email) {
         await strapi
           .plugin("email")
           .service("email")
           .send({
-            to: order.email,
-            subject: `Ваше замовлення #${order.id} отримано`,
+            to: orderForPdf.email,
+            subject: `Ваше замовлення #${orderForPdf.id} отримано`,
             html: `<p>Дякуємо за замовлення! Деталі у вкладеному PDF.</p>`,
             attachments,
           });
