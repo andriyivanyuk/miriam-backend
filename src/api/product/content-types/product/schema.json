@@ -28,6 +28,9 @@
       "relation": "manyToOne",
       "target": "api::menu-category.menu-category",
       "inversedBy": "products"
+    },
+    "title": {
+      "type": "string"
     }
   }
 }
