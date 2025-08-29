@@ -641,7 +641,17 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       'manyToOne',
       'api::menu-category.menu-category'
     >;
-    product_type: Schema.Attribute.DynamicZone<['product-types.komodi']>;
+    product_type: Schema.Attribute.DynamicZone<
+      [
+        'product-types.komodi',
+        'product-types.shafi_rospashni',
+        'product-types.shafi_kupe',
+        'product-types.tumbi',
+        'product-types.stoli',
+        'product-types.shafi_penal',
+        'product-types.peredpokiy',
+      ]
+    >;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

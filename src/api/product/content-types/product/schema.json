@@ -14,7 +14,13 @@
     "product_type": {
       "type": "dynamiczone",
       "components": [
-        "product-types.komodi"
+        "product-types.komodi",
+        "product-types.shafi_rospashni",
+        "product-types.shafi_kupe",
+        "product-types.tumbi",
+        "product-types.stoli",
+        "product-types.shafi_penal",
+        "product-types.peredpokiy"
       ]
     },
     "menu_category": {

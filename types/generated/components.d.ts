@@ -37,6 +37,120 @@ export interface ProductTypesKomodi extends Struct.ComponentSchema {
   };
 }
 
+export interface ProductTypesPeredpokiy extends Struct.ComponentSchema {
+  collectionName: 'components_product_types_peredpokyis';
+  info: {
+    displayName: 'peredpokiy';
+  };
+  attributes: {
+    basic_price: Schema.Attribute.Integer;
+    body_material: Schema.Attribute.Component<'shared.options', true>;
+    front_materials: Schema.Attribute.Component<'shared.options', true>;
+    furniture_description: Schema.Attribute.Text;
+    images: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    model_name: Schema.Attribute.String;
+    size_option: Schema.Attribute.Component<'shared.size-option', true>;
+  };
+}
+
+export interface ProductTypesShafiKupe extends Struct.ComponentSchema {
+  collectionName: 'components_product_types_shafi_kupes';
+  info: {
+    displayName: 'shafi_kupe';
+  };
+  attributes: {
+    basic_price: Schema.Attribute.Integer;
+    body_material: Schema.Attribute.Component<'shared.options', true>;
+    front_materials: Schema.Attribute.Component<'shared.options', true>;
+    furniture_description: Schema.Attribute.Text;
+    images: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    model_name: Schema.Attribute.String;
+    size_option: Schema.Attribute.Component<'shared.size-option', true>;
+  };
+}
+
+export interface ProductTypesShafiPenal extends Struct.ComponentSchema {
+  collectionName: 'components_product_types_shafi_penals';
+  info: {
+    displayName: 'shafi_penal';
+  };
+  attributes: {
+    basic_price: Schema.Attribute.Integer;
+    body_material: Schema.Attribute.Component<'shared.options', true>;
+    front_materials: Schema.Attribute.Component<'shared.options', true>;
+    furniture_description: Schema.Attribute.Text;
+    images: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    model_name: Schema.Attribute.String;
+    size_option: Schema.Attribute.Component<'shared.size-option', true>;
+  };
+}
+
+export interface ProductTypesShafiRospashni extends Struct.ComponentSchema {
+  collectionName: 'components_product_types_shafi_rospashnis';
+  info: {
+    displayName: 'shafi_rospashni';
+  };
+  attributes: {
+    basic_price: Schema.Attribute.Integer;
+    body_material: Schema.Attribute.Component<'shared.options', true>;
+    front_materials: Schema.Attribute.Component<'shared.options', true>;
+    furniture_description: Schema.Attribute.Text;
+    images: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    model_name: Schema.Attribute.String;
+    size_option: Schema.Attribute.Component<'shared.size-option', true>;
+  };
+}
+
+export interface ProductTypesStoli extends Struct.ComponentSchema {
+  collectionName: 'components_product_types_stolis';
+  info: {
+    displayName: 'stoli';
+  };
+  attributes: {
+    basic_price: Schema.Attribute.Integer;
+    body_material: Schema.Attribute.Component<'shared.options', true>;
+    front_materials: Schema.Attribute.Component<'shared.options', true>;
+    furniture_description: Schema.Attribute.Text;
+    images: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    model_name: Schema.Attribute.String;
+    size_option: Schema.Attribute.Component<'shared.size-option', true>;
+  };
+}
+
+export interface ProductTypesTumbi extends Struct.ComponentSchema {
+  collectionName: 'components_product_types_tumbis';
+  info: {
+    displayName: 'tumbi';
+  };
+  attributes: {
+    basic_price: Schema.Attribute.Integer;
+    body_material: Schema.Attribute.Component<'shared.options', true>;
+    front_materials: Schema.Attribute.Component<'shared.options', true>;
+    furniture_description: Schema.Attribute.Text;
+    images: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    model_name: Schema.Attribute.String;
+    size_option: Schema.Attribute.Component<'shared.size-option', true>;
+  };
+}
+
 export interface SharedMedia extends Struct.ComponentSchema {
   collectionName: 'components_shared_media';
   info: {
@@ -130,6 +244,12 @@ declare module '@strapi/strapi' {
     export interface ComponentSchemas {
       'orders.order-item': OrdersOrderItem;
       'product-types.komodi': ProductTypesKomodi;
+      'product-types.peredpokiy': ProductTypesPeredpokiy;
+      'product-types.shafi_kupe': ProductTypesShafiKupe;
+      'product-types.shafi_penal': ProductTypesShafiPenal;
+      'product-types.shafi_rospashni': ProductTypesShafiRospashni;
+      'product-types.stoli': ProductTypesStoli;
+      'product-types.tumbi': ProductTypesTumbi;
       'shared.media': SharedMedia;
       'shared.options': SharedOptions;
       'shared.quote': SharedQuote;
